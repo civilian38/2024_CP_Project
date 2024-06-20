@@ -214,6 +214,12 @@ public class ChessBoard {
 		Piece piece;
 		int xpos;
 		int ypos;
+		Unit(){
+			piece = null;
+			xpos = -1;
+			ypos = -1;
+			System.out.println("Unexpected Unit Generating");
+		}
 		Unit(Piece p, int x, int y){
 			piece = p;
 			xpos = x;
@@ -234,12 +240,84 @@ public class ChessBoard {
 			ypos = nextY;
 			setIcon(xpos, ypos, piece);
 		}
-    }
+
+		@Override
+		public String toString() {
+			return STR."Objcet at (\{xpos}, \{ypos})";
+		}
+	}
+
+	// Pawn 클래스
+	class Pawn extends Unit{
+		Pawn(Piece piece, int x, int y){
+			super(piece, x, y);
+		}
+
+		@Override
+		public String toString() {
+			return STR."\{piece.color} Pawn at (\{xpos}, \{ypos})";
+		}
+	}
+
+	// Rook 클래스
+	class Rook extends Unit{
+		Rook(Piece piece, int x, int y){
+			super(piece, x, y);
+		}
+		@Override
+		public String toString() {
+			return STR."\{piece.color} Rook at (\{xpos}, \{ypos})";
+		}
+	}
+
+	// Knight 클래스
+	class Knight extends Unit{
+		Knight(Piece piece, int x, int y){
+			super(piece, x, y);
+		}
+		@Override
+		public String toString() {
+			return STR."\{piece.color} Knight at (\{xpos}, \{ypos})";
+		}
+	}
+
+	// Bishop 클래스
+	class Bishop extends Unit{
+		Bishop(Piece piece, int x, int y){
+			super(piece, x, y);
+		}
+		@Override
+		public String toString() {
+			return STR."\{piece.color} Bishop at (\{xpos}, \{ypos})";
+		}
+	}
+
+	// Queen 클래스
+	class Queen extends Unit{
+		Queen(Piece piece, int x, int y){
+			super(piece, x, y);
+		}
+		@Override
+		public String toString() {
+			return STR."\{piece.color} Queen at (\{xpos}, \{ypos})";
+		}
+	}
+
+	// King 클래스
+	class King extends Unit{
+		King(Piece piece, int x, int y){
+			super(piece, x, y);
+		}
+		@Override
+		public String toString() {
+			return STR."\{piece.color} King at (\{xpos}, \{ypos})";
+		}
+	}
 
 	// 흰색 기물들에 대한 정보를 저장
 	private ArrayList<Unit> whiteUnit = new ArrayList<>();
 	// 검은색 기물들에 대한 정보를 저장
-	private ArrayList<Unit> blackUnit = new ArrayList<>(); 
+	private ArrayList<Unit> blackUnit = new ArrayList<>();
 	
 	class ButtonListener implements ActionListener{
 		int x;
