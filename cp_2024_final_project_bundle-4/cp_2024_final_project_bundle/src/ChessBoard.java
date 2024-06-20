@@ -335,12 +335,26 @@ public class ChessBoard {
 		// 검은색 기물들에 대한 정보 저장
 		for(int i = 0; i < 2; i++){
 			for(int j = 0; j < 8; j++){
-				blackUnit.add(new Unit(getIcon(i, j), i, j)); // need to be changed into derived class
+				switch (getIcon(i, j).type){
+					case PieceType.pawn -> blackUnit.add(new Pawn(getIcon(i, j), i, j));
+					case PieceType.rook -> blackUnit.add(new Rook(getIcon(i, j), i, j));
+					case PieceType.knight -> blackUnit.add(new Knight(getIcon(i, j), i, j));
+					case PieceType.bishop -> blackUnit.add(new Bishop(getIcon(i, j), i, j));
+					case PieceType.queen -> blackUnit.add(new Queen(getIcon(i, j), i, j));
+					case PieceType.king -> blackUnit.add(new King(getIcon(i, j), i, j));
+				}
 			}
 		}
 		for(int i = 6; i < 8; i++){
 			for(int j = 0; j < 8; j++){
-				whiteUnit.add(new Unit(getIcon(i, j), i, j)); // need to be changed into derived class
+				switch (getIcon(i, j).type){
+					case PieceType.pawn -> whiteUnit.add(new Pawn(getIcon(i, j), i, j));
+					case PieceType.rook -> whiteUnit.add(new Rook(getIcon(i, j), i, j));
+					case PieceType.knight -> whiteUnit.add(new Knight(getIcon(i, j), i, j));
+					case PieceType.bishop -> whiteUnit.add(new Bishop(getIcon(i, j), i, j));
+					case PieceType.queen -> whiteUnit.add(new Queen(getIcon(i, j), i, j));
+					case PieceType.king -> whiteUnit.add(new King(getIcon(i, j), i, j));
+				}
 			}
 		}
 	}
