@@ -235,6 +235,9 @@ public class ChessBoard {
 			setIcon(xpos, ypos, piece);
 		}
     }
+
+	private ArrayList<Unit> whiteUnit = new ArrayList<>();
+	private ArrayList<Unit> blackUnit = new ArrayList<>();
 	
 	class ButtonListener implements ActionListener{
 		int x;
@@ -249,6 +252,15 @@ public class ChessBoard {
 	}
 	
 	void onInitiateBoard(){
-
+		for(int i = 0; i < 2; i++){
+			for(int j = 0; j < 8; j++){
+				blackUnit.add(new Unit(getIcon(i, j), i, j));
+			}
+		}
+		for(int i = 6; i < 8; i++){
+			for(int j = 0; j < 8; j++){
+				whiteUnit.add(new Unit(getIcon(i, j), i, j));
+			}
+		}
 	}
 }
