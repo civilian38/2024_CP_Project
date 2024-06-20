@@ -236,8 +236,10 @@ public class ChessBoard {
 		}
     }
 
+	// 흰색 기물들에 대한 정보를 저장
 	private ArrayList<Unit> whiteUnit = new ArrayList<>();
-	private ArrayList<Unit> blackUnit = new ArrayList<>();
+	// 검은색 기물들에 대한 정보를 저장
+	private ArrayList<Unit> blackUnit = new ArrayList<>(); 
 	
 	class ButtonListener implements ActionListener{
 		int x;
@@ -252,14 +254,15 @@ public class ChessBoard {
 	}
 	
 	void onInitiateBoard(){
+		// 검은색 기물들에 대한 정보 저장
 		for(int i = 0; i < 2; i++){
 			for(int j = 0; j < 8; j++){
-				blackUnit.add(new Unit(getIcon(i, j), i, j));
+				blackUnit.add(new Unit(getIcon(i, j), i, j)); // need to be changed into derived class
 			}
 		}
 		for(int i = 6; i < 8; i++){
 			for(int j = 0; j < 8; j++){
-				whiteUnit.add(new Unit(getIcon(i, j), i, j));
+				whiteUnit.add(new Unit(getIcon(i, j), i, j)); // need to be changed into derived class
 			}
 		}
 	}
