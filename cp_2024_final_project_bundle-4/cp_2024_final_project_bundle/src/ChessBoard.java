@@ -400,7 +400,7 @@ public class ChessBoard {
 
 	// 클릭한 위치가 단순 이동 위치인지, 공격 위치인지, 아무것도 아닌지 반환
 	ClickAction nextAction(int[] position, ArrayList<ArrayList<int[]>> next){
-		if(next == null){
+		if(next == null || next.isEmpty()){
 			return ClickAction.None;
 		}
 		// 선택한 위치가 단순 이동 위치
@@ -415,6 +415,8 @@ public class ChessBoard {
 
 	// 이전 action에서 누른 타일 저장
 	Piece prevTile = null;
+	int prevX;
+	int prevY;
 	// 이전에 내 기물을 선택했다면, 기물이 움직일 수 있는 위치 저장
 	ArrayList<ArrayList<int[]>> prevNext;
 	// 하이라이트된 타일 저장
@@ -429,6 +431,12 @@ public class ChessBoard {
 		}
 		// (x, y) is where the click event occured
 		public void actionPerformed(ActionEvent e) {
+			// 하이라이트 제거
+			for (int[] highlightedTile : highlighted) {
+				unmarkPosition(highlightedTile[0], highlightedTile[1]);
+			}
+			highlighted.clear();
+
 			if(getIcon(x, y).color == turn){ // 내 기물 클릭
 				switch (nextAction(new int[]{x, y}, prevNext)){
 					case ClickAction.Move: {
@@ -442,15 +450,9 @@ public class ChessBoard {
 						break;
 					}
 					case ClickAction.None: {
-						// 하이라이트 제거
-                        for (int[] highlightedTile : highlighted) {
-                            unmarkPosition(highlightedTile[0], highlightedTile[1]);
-                        }
-						highlighted.clear();
+						// prevNext 업데이트
 						if(prevNext != null)
 							prevNext.clear();
-
-						// prevNext 업데이트
 						Unit selected = (turn == PlayerColor.white) ? Unit.findUnit(whiteUnit, getIcon(x, y), x, y):
 								Unit.findUnit(blackUnit, getIcon(x, y), x, y);
 						prevNext = selected.next();
@@ -468,9 +470,30 @@ public class ChessBoard {
 			} else if (getIcon(x, y).color == enemyColor()){ // 상대 기물 클릭
 
 			} else { // 빈 타일 클릭
+				switch (nextAction(new int[]{x, y}, prevNext)){
+					case ClickAction.Move: {
+						Unit selected = (turn == PlayerColor.white) ? Unit.findUnit(whiteUnit, prevTile, prevX, prevY):
+								Unit.findUnit(blackUnit, prevTile, prevX, prevY);
+						selected.move(x, y);
 
+						if(prevNext != null)
+							prevNext.clear();
+						changeTurn();
+						break;
+					}
+					case ClickAction.Attack: {
+
+						break;
+					}
+					case ClickAction.None: {
+
+						break;
+					}
+				}
 			}
 			prevTile = getIcon(x, y);
+			prevX = x;
+			prevY = y;
 		}
 	}
 
