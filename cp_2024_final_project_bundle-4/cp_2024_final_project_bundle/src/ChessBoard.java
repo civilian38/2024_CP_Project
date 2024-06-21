@@ -348,6 +348,20 @@ public class ChessBoard {
 			super(piece, x, y);
 		}
 		@Override
+		ArrayList<ArrayList<int[]>> next(){
+			ArrayList<int[]> move = new ArrayList<>(); // 빈 공간으로 움직일 수 있는 위치들
+			ArrayList<int[]> attack = new ArrayList<>(); // 적 기물을 공격할 수 있는 위치들
+
+
+
+			//반환
+			ArrayList<ArrayList<int[]>> returnArray = new ArrayList<>();
+			returnArray.add(move);
+			returnArray.add(attack);
+			return returnArray;
+		}
+
+		@Override
 		public String toString() {
 			return STR."\{piece.color} Rook at (\{xpos}, \{ypos})";
 		}
@@ -357,6 +371,19 @@ public class ChessBoard {
 	class Knight extends Unit{
 		Knight(Piece piece, int x, int y){
 			super(piece, x, y);
+		}
+		@Override
+		ArrayList<ArrayList<int[]>> next(){
+			ArrayList<int[]> move = new ArrayList<>(); // 빈 공간으로 움직일 수 있는 위치들
+			ArrayList<int[]> attack = new ArrayList<>(); // 적 기물을 공격할 수 있는 위치들
+
+
+
+			//반환
+			ArrayList<ArrayList<int[]>> returnArray = new ArrayList<>();
+			returnArray.add(move);
+			returnArray.add(attack);
+			return returnArray;
 		}
 		@Override
 		public String toString() {
@@ -370,6 +397,19 @@ public class ChessBoard {
 			super(piece, x, y);
 		}
 		@Override
+		ArrayList<ArrayList<int[]>> next(){
+			ArrayList<int[]> move = new ArrayList<>(); // 빈 공간으로 움직일 수 있는 위치들
+			ArrayList<int[]> attack = new ArrayList<>(); // 적 기물을 공격할 수 있는 위치들
+
+
+
+			//반환
+			ArrayList<ArrayList<int[]>> returnArray = new ArrayList<>();
+			returnArray.add(move);
+			returnArray.add(attack);
+			return returnArray;
+		}
+		@Override
 		public String toString() {
 			return STR."\{piece.color} Bishop at (\{xpos}, \{ypos})";
 		}
@@ -381,6 +421,19 @@ public class ChessBoard {
 			super(piece, x, y);
 		}
 		@Override
+		ArrayList<ArrayList<int[]>> next(){
+			ArrayList<int[]> move = new ArrayList<>(); // 빈 공간으로 움직일 수 있는 위치들
+			ArrayList<int[]> attack = new ArrayList<>(); // 적 기물을 공격할 수 있는 위치들
+
+
+
+			//반환
+			ArrayList<ArrayList<int[]>> returnArray = new ArrayList<>();
+			returnArray.add(move);
+			returnArray.add(attack);
+			return returnArray;
+		}
+		@Override
 		public String toString() {
 			return STR."\{piece.color} Queen at (\{xpos}, \{ypos})";
 		}
@@ -390,6 +443,19 @@ public class ChessBoard {
 	class King extends Unit{
 		King(Piece piece, int x, int y){
 			super(piece, x, y);
+		}
+		@Override
+		ArrayList<ArrayList<int[]>> next(){
+			ArrayList<int[]> move = new ArrayList<>(); // 빈 공간으로 움직일 수 있는 위치들
+			ArrayList<int[]> attack = new ArrayList<>(); // 적 기물을 공격할 수 있는 위치들
+
+
+
+			//반환
+			ArrayList<ArrayList<int[]>> returnArray = new ArrayList<>();
+			returnArray.add(move);
+			returnArray.add(attack);
+			return returnArray;
 		}
 		@Override
 		public String toString() {
