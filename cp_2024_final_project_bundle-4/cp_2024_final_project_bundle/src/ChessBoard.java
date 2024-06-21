@@ -267,7 +267,6 @@ public class ChessBoard {
 			}
 			return null;
 		}
-		// piece, x좌표, y좌표를 주면 ArrayList 내에서 이에 해당하는 unit 제거
 
 		// {{attack 하지 않고 움직일 수 있는 좌표쌍}, {attack 할 수 있는 좌표쌍}}
 		ArrayList<ArrayList<int[]>> next(){
@@ -314,10 +313,12 @@ public class ChessBoard {
 
 			// 적 기물 공격 가능 위치 계산
 			PlayerColor enemy = (piece.color == PlayerColor.black) ? PlayerColor.white : PlayerColor.black;
-			if(isInBound(newX, newY + 1) && getIcon(newX, newY + 1).color == enemy){
+			if(isInBound(newX, newY + 1) &&
+					(getIcon(newX, newY + 1).color == enemy || VirtualPawn.isVPHere(newX, newY + 1))){
 				attack.add(new int[]{newX, newY + 1});
 			}
-			if(isInBound(newX, newY - 1) && getIcon(newX, newY - 1).color == enemy){
+			if(isInBound(newX, newY - 1) &&
+					(getIcon(newX, newY - 1).color == enemy || VirtualPawn.isVPHere(newX, newY -1))){
 				attack.add(new int[]{newX, newY - 1});
 			}
 
@@ -330,6 +331,13 @@ public class ChessBoard {
 
 		@Override
 		void move(int nextX, int nextY){
+			if(!isMoved && Math.abs(nextX - xpos) == 2){
+				VirtualPawn.setVirtualPawn(
+						(piece.color == PlayerColor.black) ? nextX - 1 : nextX + 1,
+						nextY,
+						this
+				);
+			}
 			super.move(nextX, nextY);
 			isMoved = true;
 		}
@@ -337,6 +345,32 @@ public class ChessBoard {
 		@Override
 		public String toString() {
 			return STR."\{piece.color} Pawn at (\{xpos}, \{ypos})";
+		}
+	}
+
+	// En Passant을 위한 가상 Pawn 클래스
+	class VirtualPawn{
+		static int xpos = - 1;
+		static int ypos = - 1;
+		static Pawn actualPawn;
+		static void setVirtualPawn(int x, int y, Pawn p){
+			xpos = x;
+			ypos = y;
+			actualPawn = p;
+		}
+		static void resetVirtualPawn(Pawn dummy){
+			xpos = -1;
+			ypos = -1;
+			actualPawn = dummy;
+		}
+		static boolean isVPHere(int x, int y){
+			return (xpos == x && ypos == y);
+		}
+		static PlayerColor color(){
+			return actualPawn.piece.color;
+		}
+		static void printVirtualPawn(){
+			System.out.println(STR."\{actualPawn}virtual position: (\{xpos}, \{ypos})");
 		}
 	}
 
@@ -587,6 +621,7 @@ public class ChessBoard {
 	private ArrayList<Unit> whiteUnit = new ArrayList<>();
 	// 검은색 기물들에 대한 정보를 저장
 	private ArrayList<Unit> blackUnit = new ArrayList<>();
+	// piece, x좌표, y좌표를 주면 ArrayList 내에서 이에 해당하는 unit 제거
 	void deleteUnit(ArrayList<Unit> unitlist, Piece piece, int x, int y){
 		unitlist.removeIf(unit -> unit.piece.equals(piece) && unit.xpos == x && unit.ypos == y);
 		setIcon(x, y, new Piece());
@@ -624,7 +659,10 @@ public class ChessBoard {
 			this.y = y;
 		}
 		// (x, y) is where the click event occured
+		int num = 0;
 		public void actionPerformed(ActionEvent e) {
+			System.out.print(num + " : ");
+			num++;
 			// 하이라이트 제거
 			for (int[] highlightedTile : highlighted) {
 				unmarkPosition(highlightedTile[0], highlightedTile[1]);
@@ -699,8 +737,16 @@ public class ChessBoard {
 						break;
 					}
 					case ClickAction.Attack: {
-						// which may not happen
-						System.out.println("Unexpected Operation: attacking empty tile");
+						// en passant
+						deleteUnit((turn == PlayerColor.white) ? blackUnit: whiteUnit,
+								VirtualPawn.actualPawn.piece, VirtualPawn.actualPawn.xpos, VirtualPawn.actualPawn.ypos);
+						Unit selected = (turn == PlayerColor.white) ? Unit.findUnit(whiteUnit, prevTile, prevX, prevY):
+								Unit.findUnit(blackUnit, prevTile, prevX, prevY);
+						selected.move(x, y);
+						if(prevNext != null)
+							prevNext.clear();
+
+						changeTurn();
 						break;
 					}
 					case ClickAction.None: {
@@ -712,6 +758,11 @@ public class ChessBoard {
 			prevTile = getIcon(x, y);
 			prevX = x;
 			prevY = y;
+
+			if(VirtualPawn.color() == turn){
+				Pawn dummy = new Pawn(new Piece(), -1, -1);
+				VirtualPawn.resetVirtualPawn(dummy);
+			}
 		}
 	}
 
@@ -742,6 +793,8 @@ public class ChessBoard {
 				}
 			}
 		}
+		Pawn dummy = new Pawn(new Piece(), -1, -1);
+		VirtualPawn.resetVirtualPawn(dummy);
 		//흰색 턴 시작
 		turn = PlayerColor.none;
 		changeTurn();
