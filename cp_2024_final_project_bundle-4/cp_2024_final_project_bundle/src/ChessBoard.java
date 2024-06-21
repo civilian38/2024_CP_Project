@@ -7,7 +7,7 @@ import javax.swing.border.*;
 //======================================================Don't modify below===============================================================//
 enum PieceType {king, queen, bishop, knight, rook, pawn, none}
 enum PlayerColor {black, white, none}
-	
+
 public class ChessBoard {
 	private final JPanel gui = new JPanel(new BorderLayout(3, 3));
 	private JPanel chessBoard;
@@ -22,13 +22,13 @@ public class ChessBoard {
 		initBoardStatus();
 		initializeGui();
 	}
-	
+
 	public final void initBoardStatus(){
 		for(int i=0;i<8;i++){
 			for(int j=0;j<8;j++) chessBoardStatus[j][i] = new Piece();
 		}
 	}
-	
+
 	public final void initPieceImages(){
 		pieceImage_b[0] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\king_b.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
 		pieceImage_b[1] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\queen_b.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
@@ -37,7 +37,7 @@ public class ChessBoard {
 		pieceImage_b[4] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\rook_b.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
 		pieceImage_b[5] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\pawn_b.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
 		pieceImage_b[6] = new ImageIcon(new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB));
-		
+
 		pieceImage_w[0] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\king_w.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
 		pieceImage_w[1] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\queen_w.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
 		pieceImage_w[2] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\bishop_w.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
@@ -46,7 +46,7 @@ public class ChessBoard {
 		pieceImage_w[5] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\pawn_w.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
 		pieceImage_w[6] = new ImageIcon(new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB));
 	}
-	
+
 	public ImageIcon getImageIcon(Piece piece){
 		if(piece.color.equals(PlayerColor.black)){
 			if(piece.type.equals(PieceType.king)) return pieceImage_b[0];
@@ -80,7 +80,7 @@ public class ChessBoard {
 	    		initiateBoard();
 	    	}
 	    });
-	    
+
 	    tools.add(startButton);
 	    tools.addSeparator();
 	    tools.add(message);
@@ -106,14 +106,14 @@ public class ChessBoard {
 
 	    for (int i=0; i < 8; i++) {
 	        for (int j=0; j < 8; j++) chessBoard.add(chessBoardSquares[j][i]);
-	        
+
 	    }
 	}
 
 	public final JComponent getGui() {
 	    return gui;
 	}
-	
+
 	public static void main(String[] args) {
 	    Runnable r = new Runnable() {
 	        @Override
@@ -131,13 +131,13 @@ public class ChessBoard {
         };
         SwingUtilities.invokeLater(r);
 	}
-		
-			//================================Utilize these functions========================================//	
-	
+
+			//================================Utilize these functions========================================//
+
 	class Piece{
 		PlayerColor color;
 		PieceType type;
-		
+
 		Piece(){
 			color = PlayerColor.none;
 			type = PieceType.none;
@@ -147,29 +147,29 @@ public class ChessBoard {
 			this.type = type;
 		}
 	}
-	
+
 	public void setIcon(int x, int y, Piece piece){
 		chessBoardSquares[y][x].setIcon(getImageIcon(piece));
 		chessBoardStatus[y][x] = piece;
 	}
-	
+
 	public Piece getIcon(int x, int y){
 		return chessBoardStatus[y][x];
 	}
-	
+
 	public void markPosition(int x, int y){
 		chessBoardSquares[y][x].setBackground(Color.pink);
 	}
-	
+
 	public void unmarkPosition(int x, int y){
 		if((y % 2 == 1 && x % 2 == 1)|| (y % 2 == 0 && x % 2 == 0)) chessBoardSquares[y][x].setBackground(Color.WHITE);
 		else chessBoardSquares[y][x].setBackground(Color.gray);
 	}
-	
+
 	public void setStatus(String inpt){
 		message.setText(inpt);
 	}
-	
+
 	public void initiateBoard(){
 		for(int i=0;i<8;i++){
 			for(int j=0;j<8;j++) setIcon(i, j, new Piece());
@@ -199,15 +199,26 @@ public class ChessBoard {
 		}
 		onInitiateBoard();
 	}
-//======================================================Don't modify above==============================================================//	
+//======================================================Don't modify above==============================================================//
 
 
 
 
-//======================================================Implement below=================================================================//		
+//======================================================Implement below=================================================================//
 	enum MagicType {MARK, CHECK, CHECKMATE};
 	private int selX, selY;
 	private boolean check, checkmate, end;
+	private PlayerColor turn = PlayerColor.none;
+
+	// white - black 턴 전환
+	void changeTurn(){
+		switch (turn){
+			case PlayerColor.none -> turn = PlayerColor.white;
+			case PlayerColor.black -> turn = PlayerColor.white;
+			case PlayerColor.white -> turn = PlayerColor.black;
+		}
+		setStatus(STR."\{turn}'s turn");
+	}
 
 	// 기물 종류별 클래스의 base class
 	class Unit{
@@ -354,7 +365,7 @@ public class ChessBoard {
 	private ArrayList<Unit> whiteUnit = new ArrayList<>();
 	// 검은색 기물들에 대한 정보를 저장
 	private ArrayList<Unit> blackUnit = new ArrayList<>();
-	
+
 	class ButtonListener implements ActionListener{
 		int x;
 		int y;
@@ -366,7 +377,7 @@ public class ChessBoard {
 			// (x, y) is where the click event occured
 		}
 	}
-	
+
 	void onInitiateBoard(){
 		// 검은색 기물들에 대한 정보 저장
 		for(int i = 0; i < 2; i++){
@@ -381,6 +392,7 @@ public class ChessBoard {
 				}
 			}
 		}
+		// 흰색 기물들에 대한 정보 저장
 		for(int i = 6; i < 8; i++){
 			for(int j = 0; j < 8; j++){
 				switch (getIcon(i, j).type){
@@ -393,5 +405,8 @@ public class ChessBoard {
 				}
 			}
 		}
+		//흰색 턴 시작
+		turn = PlayerColor.none;
+		changeTurn();
 	}
 }
