@@ -2,6 +2,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import javax.swing.*;
 import javax.swing.border.*;
 //======================================================Don't modify below===============================================================//
@@ -206,6 +207,7 @@ public class ChessBoard {
 
 //======================================================Implement below=================================================================//
 	enum MagicType {MARK, CHECK, CHECKMATE};
+	enum ClickAction {Attack, Move, None};
 	private int selX, selY;
 	private boolean check, checkmate, end;
 	private PlayerColor turn = PlayerColor.none;
@@ -218,6 +220,22 @@ public class ChessBoard {
 			case PlayerColor.white -> turn = PlayerColor.black;
 		}
 		setStatus(STR."\{turn}'s turn");
+	}
+
+	// 상대 색 반환
+	PlayerColor enemyColor(){
+		switch (turn){
+            case PlayerColor.none -> {
+                return PlayerColor.none;
+            }
+            case PlayerColor.black -> {
+				return PlayerColor.white;
+			}
+			case PlayerColor.white -> {
+				return PlayerColor.black;
+			}
+		}
+		return PlayerColor.none;
 	}
 
 	// 기물 종류별 클래스의 base class
@@ -239,6 +257,15 @@ public class ChessBoard {
 		// 기물의 예상 경로 validation 확인시 bound 설정
 		static boolean isInBound(int x, int y){
 			return ((0 <= x && x < 8) && (0 <= y && y < 8));
+		}
+		// piece, x좌표, y좌표를 주면 ArrayList 내에서 이에 해당하는 요소 반환
+		static Unit findUnit(ArrayList<Unit> unitlist, Piece piece, int x, int y){
+			for(Unit unit: unitlist){
+				if(unit.piece.equals(piece) && unit.xpos == x && unit.ypos == y){
+					return unit;
+				}
+			}
+			return null;
 		}
 		// {{attack 하지 않고 움직일 수 있는 좌표쌍}, {attack 할 수 있는 좌표쌍}}
 		ArrayList<ArrayList<int[]>> next(){
@@ -281,7 +308,6 @@ public class ChessBoard {
 				if(!isMoved && getIcon(newX + moveDirection[0], newY + moveDirection[1]).color == PlayerColor.none){
 					move.add(new int[]{newX + moveDirection[0], newY + moveDirection[1]});
 				}
-				isMoved = true;
 			}
 
 			// 적 기물 공격 가능 위치 계산
@@ -298,6 +324,12 @@ public class ChessBoard {
 			returnArray.add(move);
 			returnArray.add(attack);
 			return returnArray;
+		}
+
+		@Override
+		void move(int nextX, int nextY){
+			super.move(nextX, nextY);
+			isMoved = true;
 		}
 
 		@Override
@@ -366,6 +398,28 @@ public class ChessBoard {
 	// 검은색 기물들에 대한 정보를 저장
 	private ArrayList<Unit> blackUnit = new ArrayList<>();
 
+	// 클릭한 위치가 단순 이동 위치인지, 공격 위치인지, 아무것도 아닌지 반환
+	ClickAction nextAction(int[] position, ArrayList<ArrayList<int[]>> next){
+		if(next == null){
+			return ClickAction.None;
+		}
+		// 선택한 위치가 단순 이동 위치
+		if(next.get(0).stream().anyMatch(point -> Arrays.equals(point, position))){
+			return ClickAction.Move;
+		} else if (next.get(1).stream().anyMatch(point -> Arrays.equals(point, position))){ // 공격위치
+			return ClickAction.Attack;
+		} else { // 빈 위치
+			return ClickAction.None;
+		}
+	}
+
+	// 이전 action에서 누른 타일 저장
+	Piece prevTile = null;
+	// 이전에 내 기물을 선택했다면, 기물이 움직일 수 있는 위치 저장
+	ArrayList<ArrayList<int[]>> prevNext;
+	// 하이라이트된 타일 저장
+	ArrayList<int[]> highlighted = new ArrayList<>();
+
 	class ButtonListener implements ActionListener{
 		int x;
 		int y;
@@ -373,8 +427,50 @@ public class ChessBoard {
 			this.x = x;
 			this.y = y;
 		}
-		public void actionPerformed(ActionEvent e) {	// Only modify here
-			// (x, y) is where the click event occured
+		// (x, y) is where the click event occured
+		public void actionPerformed(ActionEvent e) {
+			if(getIcon(x, y).color == turn){ // 내 기물 클릭
+				switch (nextAction(new int[]{x, y}, prevNext)){
+					case ClickAction.Move: {
+
+						changeTurn();
+						break;
+					}
+					case ClickAction.Attack: {
+
+						changeTurn();
+						break;
+					}
+					case ClickAction.None: {
+						// 하이라이트 제거
+                        for (int[] highlightedTile : highlighted) {
+                            unmarkPosition(highlightedTile[0], highlightedTile[1]);
+                        }
+						highlighted.clear();
+						if(prevNext != null)
+							prevNext.clear();
+
+						// prevNext 업데이트
+						Unit selected = (turn == PlayerColor.white) ? Unit.findUnit(whiteUnit, getIcon(x, y), x, y):
+								Unit.findUnit(blackUnit, getIcon(x, y), x, y);
+						prevNext = selected.next();
+
+						// 하이라이트 추가
+						for(ArrayList<int[]> candidate: prevNext){
+                            highlighted.addAll(candidate);
+						}
+						for(int[] highlightTile: highlighted){
+							markPosition(highlightTile[0], highlightTile[1]);
+						}
+						break;
+					}
+				}
+			} else if (getIcon(x, y).color == enemyColor()){ // 상대 기물 클릭
+
+			} else { // 빈 타일 클릭
+
+			}
+			prevTile = getIcon(x, y);
 		}
 	}
 
