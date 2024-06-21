@@ -230,7 +230,7 @@ public class ChessBoard {
 			return ((0 <= x && x < 8) && (0 <= y && y < 8));
 		}
 		// {{attack 하지 않고 움직일 수 있는 좌표쌍}, {attack 할 수 있는 좌표쌍}}
-		ArrayList<ArrayList<ArrayList<Integer>>> next(){
+		ArrayList<ArrayList<int[]>> next(){
 			return null;
 		}
 		// 클래스 내 x,y 좌표 변환 & 화면상 좌표 변환
@@ -249,8 +249,44 @@ public class ChessBoard {
 
 	// Pawn 클래스
 	class Pawn extends Unit{
+		boolean isMoved = false;
 		Pawn(Piece piece, int x, int y){
 			super(piece, x, y);
+		}
+
+		@Override
+		ArrayList<ArrayList<int[]>> next(){
+			ArrayList<int[]> move = new ArrayList<>(); // 빈 공간으로 움직일 수 있는 위치들
+			ArrayList<int[]> attack = new ArrayList<>(); // 적 기물을 공격할 수 있는 위치들
+
+			// 움직일 수 있는 방향 설정
+			int[] moveDirection = (piece.color == PlayerColor.black) ? new int[]{1, 0} : new int[]{-1, 0};
+
+			//빈 공간으로 움직일 수 있는 위치 계산
+			int newX = xpos + moveDirection[0];
+			int newY = ypos + moveDirection[1];
+			if(isInBound(newX, newY) && getIcon(newX, newY).color == PlayerColor.none){
+				move.add(new int[]{newX, newY});
+				if(!isMoved && getIcon(newX + moveDirection[0], newY + moveDirection[1]).color == PlayerColor.none){
+					move.add(new int[]{newX + moveDirection[0], newY + moveDirection[1]});
+				}
+				isMoved = true;
+			}
+
+			// 적 기물 공격 가능 위치 계산
+			PlayerColor enemy = (piece.color == PlayerColor.black) ? PlayerColor.white : PlayerColor.black;
+			if(isInBound(newX, newY + 1) && getIcon(newX, newY + 1).color == enemy){
+				attack.add(new int[]{newX, newY + 1});
+			}
+			if(isInBound(newX, newY - 1) && getIcon(newX, newY - 1).color == enemy){
+				attack.add(new int[]{newX, newY - 1});
+			}
+
+			//반환
+			ArrayList<ArrayList<int[]>> returnArray = new ArrayList<>();
+			returnArray.add(move);
+			returnArray.add(attack);
+			return returnArray;
 		}
 
 		@Override
