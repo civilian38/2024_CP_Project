@@ -267,6 +267,10 @@ public class ChessBoard {
 			}
 			return null;
 		}
+		// piece, x좌표, y좌표를 주면 ArrayList 내에서 이에 해당하는 unit 제거
+		static void deleteUnit(ArrayList<Unit> unitlist, Piece piece, int x, int y){
+            unitlist.removeIf(unit -> unit.piece.equals(piece) && unit.xpos == x && unit.ypos == y);
+		}
 		// {{attack 하지 않고 움직일 수 있는 좌표쌍}, {attack 할 수 있는 좌표쌍}}
 		ArrayList<ArrayList<int[]>> next(){
 			return null;
@@ -440,13 +444,13 @@ public class ChessBoard {
 			if(getIcon(x, y).color == turn){ // 내 기물 클릭
 				switch (nextAction(new int[]{x, y}, prevNext)){
 					case ClickAction.Move: {
-
+						// castling
 						changeTurn();
 						break;
 					}
 					case ClickAction.Attack: {
-
-						changeTurn();
+						// which may not happen
+						System.out.println("Unexpected Operation: my unit attacks my unit");
 						break;
 					}
 					case ClickAction.None: {
@@ -458,17 +462,40 @@ public class ChessBoard {
 						prevNext = selected.next();
 
 						// 하이라이트 추가
-						for(ArrayList<int[]> candidate: prevNext){
-                            highlighted.addAll(candidate);
-						}
-						for(int[] highlightTile: highlighted){
-							markPosition(highlightTile[0], highlightTile[1]);
+						if(prevNext != null && !prevNext.isEmpty()){
+							for(ArrayList<int[]> candidate: prevNext){
+								highlighted.addAll(candidate);
+							}
+							for(int[] highlightTile: highlighted){
+								markPosition(highlightTile[0], highlightTile[1]);
+							}
 						}
 						break;
 					}
 				}
 			} else if (getIcon(x, y).color == enemyColor()){ // 상대 기물 클릭
+				switch (nextAction(new int[]{x, y}, prevNext)){
+					case ClickAction.Move: {
+						// Which may not happen
+						System.out.println("Unexpected Action: Moving enemy's unit");
+						break;
+					}
+					case ClickAction.Attack: {
+						Unit.deleteUnit((turn == PlayerColor.white) ? blackUnit: whiteUnit, getIcon(x, y), x, y);
+						Unit selected = (turn == PlayerColor.white) ? Unit.findUnit(whiteUnit, prevTile, prevX, prevY):
+								Unit.findUnit(blackUnit, prevTile, prevX, prevY);
+						selected.move(x, y);
+						if(prevNext != null)
+							prevNext.clear();
 
+						changeTurn();
+						break;
+					}
+					case ClickAction.None: {
+						// No action Needed
+						break;
+					}
+				}
 			} else { // 빈 타일 클릭
 				switch (nextAction(new int[]{x, y}, prevNext)){
 					case ClickAction.Move: {
@@ -482,11 +509,12 @@ public class ChessBoard {
 						break;
 					}
 					case ClickAction.Attack: {
-
+						// which may not happen
+						System.out.println("Unexpected Operation: attacking empty tile");
 						break;
 					}
 					case ClickAction.None: {
-
+						// no action needed
 						break;
 					}
 				}
