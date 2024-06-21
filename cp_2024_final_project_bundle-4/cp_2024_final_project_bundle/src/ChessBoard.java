@@ -547,7 +547,31 @@ public class ChessBoard {
 			ArrayList<int[]> move = new ArrayList<>(); // 빈 공간으로 움직일 수 있는 위치들
 			ArrayList<int[]> attack = new ArrayList<>(); // 적 기물을 공격할 수 있는 위치들
 
+			int[][] direction = {
+					{0, 1},
+					{0, - 1},
+					{1, 0},
+					{1, 1},
+					{1, - 1},
+					{- 1, 0},
+					{- 1, 1},
+					{- 1, - 1}
+			};
 
+			for(int i = 0; i < 8; i++) {
+				// 방향 지정
+				int[] movement = direction[i];
+
+				// 방향 이동 시작
+				int nextX = xpos + movement[0];
+				int nextY = ypos + movement[1];
+
+				if (isInBound(nextX, nextY) && getIcon(nextX, nextY).color == PlayerColor.none) {
+					move.add(new int[]{nextX, nextY});
+				} else if (isInBound(nextX, nextY) && getIcon(nextX, nextY).color == enemyColor()) {
+					attack.add(new int[]{nextX, nextY});
+				}
+			}
 
 			//반환
 			ArrayList<ArrayList<int[]>> returnArray = new ArrayList<>();
