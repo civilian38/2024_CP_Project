@@ -268,9 +268,7 @@ public class ChessBoard {
 			return null;
 		}
 		// piece, x좌표, y좌표를 주면 ArrayList 내에서 이에 해당하는 unit 제거
-		static void deleteUnit(ArrayList<Unit> unitlist, Piece piece, int x, int y){
-            unitlist.removeIf(unit -> unit.piece.equals(piece) && unit.xpos == x && unit.ypos == y);
-		}
+
 		// {{attack 하지 않고 움직일 수 있는 좌표쌍}, {attack 할 수 있는 좌표쌍}}
 		ArrayList<ArrayList<int[]>> next(){
 			return null;
@@ -589,6 +587,10 @@ public class ChessBoard {
 	private ArrayList<Unit> whiteUnit = new ArrayList<>();
 	// 검은색 기물들에 대한 정보를 저장
 	private ArrayList<Unit> blackUnit = new ArrayList<>();
+	void deleteUnit(ArrayList<Unit> unitlist, Piece piece, int x, int y){
+		unitlist.removeIf(unit -> unit.piece.equals(piece) && unit.xpos == x && unit.ypos == y);
+		setIcon(x, y, new Piece());
+	}
 
 	// 클릭한 위치가 단순 이동 위치인지, 공격 위치인지, 아무것도 아닌지 반환
 	ClickAction nextAction(int[] position, ArrayList<ArrayList<int[]>> next){
@@ -669,7 +671,7 @@ public class ChessBoard {
 						break;
 					}
 					case ClickAction.Attack: {
-						Unit.deleteUnit((turn == PlayerColor.white) ? blackUnit: whiteUnit, getIcon(x, y), x, y);
+						deleteUnit((turn == PlayerColor.white) ? blackUnit: whiteUnit, getIcon(x, y), x, y);
 						Unit selected = (turn == PlayerColor.white) ? Unit.findUnit(whiteUnit, prevTile, prevX, prevY):
 								Unit.findUnit(blackUnit, prevTile, prevX, prevY);
 						selected.move(x, y);
