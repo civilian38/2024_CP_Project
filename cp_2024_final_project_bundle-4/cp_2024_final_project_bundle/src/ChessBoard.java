@@ -279,9 +279,13 @@ public class ChessBoard {
 			ypos = nextY;
 			setIcon(xpos, ypos, piece);
 		}
-
+		// for Pawn, used for Promotion
 		int specialValue(){
 			return -1;
+		}
+		// for Rook and King, used for castling
+		boolean isMoved(){
+			return false;
 		}
 
 		@Override
@@ -387,6 +391,7 @@ public class ChessBoard {
 
 	// Rook 클래스
 	class Rook extends Unit{
+		boolean isMoved = false;
 		Rook(Piece piece, int x, int y){
 			super(piece, x, y);
 		}
@@ -423,11 +428,44 @@ public class ChessBoard {
 				}
 			}
 
+			// Castling Condition Check
+			if(!isMoved){
+				int nextKingY = (ypos == 0) ? 2: 6;
+				if(
+						getIcon(xpos, 4).type == PieceType.king &&
+						!findUnit((piece.color == PlayerColor.white) ? whiteUnit: blackUnit, getIcon(xpos, 4), xpos, 4).isMoved() &&
+						!isTargeted(xpos, nextKingY, piece.color)
+				){
+					boolean isInCondition = true;
+					for(int i = ypos; i != 4; i += (4 - ypos)/Math.abs(4 - ypos)){
+						if(i != ypos && getIcon(xpos, i).type != PieceType.none){
+							isInCondition = false;
+							break;
+						}
+					}
+
+					if(isInCondition){
+						move.add(new int[]{xpos, 4});
+					}
+				}
+			}
+
 			//반환
 			ArrayList<ArrayList<int[]>> returnArray = new ArrayList<>();
 			returnArray.add(move);
 			returnArray.add(attack);
 			return returnArray;
+		}
+
+		@Override
+		void move(int newX, int newY){
+			super.move(newX, newY);
+			isMoved = true;
+		}
+
+		@Override
+		boolean isMoved(){
+			return isMoved;
 		}
 
 		@Override
@@ -582,8 +620,10 @@ public class ChessBoard {
 
 	// King 클래스
 	class King extends Unit{
+		boolean isMoved;
 		King(Piece piece, int x, int y){
 			super(piece, x, y);
+			isMoved = false;
 		}
 		@Override
 		ArrayList<ArrayList<int[]>> next(){
@@ -616,12 +656,65 @@ public class ChessBoard {
 				}
 			}
 
+			//Castling Condition Check
+			if(!isMoved){
+				// Rook on A
+				if(
+						getIcon(xpos, 0).type == PieceType.rook &&
+						!findUnit((piece.color == PlayerColor.white) ? whiteUnit: blackUnit, getIcon(xpos, 0), xpos, 0).isMoved() &&
+						!isTargeted(xpos, 2, piece.color)
+				){
+					boolean isIncondition = true;
+					for(int i = 1; i < 4; i++){
+						if(getIcon(xpos, i).type != PieceType.none){
+							isIncondition = false;
+							break;
+						}
+					}
+
+					if(isIncondition){
+						move.add(new int[]{xpos, 0});
+					}
+				}
+
+				// Rook on B
+				if(
+						getIcon(xpos, 7).type == PieceType.rook &&
+						!findUnit((piece.color == PlayerColor.white) ? whiteUnit: blackUnit, getIcon(xpos, 7), xpos, 7).isMoved() &&
+						!isTargeted(xpos, 6, piece.color)
+				){
+					boolean isIncondition = true;
+					for(int i = 5; i < 7; i++){
+						if(getIcon(xpos, i).type != PieceType.none){
+							isIncondition = false;
+							break;
+						}
+					}
+
+					if(isIncondition){
+						move.add(new int[]{xpos, 7});
+					}
+				}
+			}
+
 			//반환
 			ArrayList<ArrayList<int[]>> returnArray = new ArrayList<>();
 			returnArray.add(move);
 			returnArray.add(attack);
 			return returnArray;
 		}
+
+		@Override
+		void move(int newX, int newY){
+			super.move(newX, newY);
+			isMoved = true;
+		}
+
+		@Override
+		boolean isMoved(){
+			return isMoved;
+		}
+
 		@Override
 		public String toString() {
 			return STR."\{piece.color} King at (\{xpos}, \{ypos})";
@@ -636,6 +729,11 @@ public class ChessBoard {
 	void deleteUnit(ArrayList<Unit> unitlist, Piece piece, int x, int y){
 		unitlist.removeIf(unit -> unit.piece.equals(piece) && unit.xpos == x && unit.ypos == y);
 		setIcon(x, y, new Piece());
+	}
+	// x 좌표, y 좌표, color를 받았을 때 해당 위치를 적이 공격할 수 있는지 확인
+	boolean isTargeted(int x, int y, PlayerColor p){
+		// need to be implemented
+		return false;
 	}
 
 	// 클릭한 위치가 단순 이동 위치인지, 공격 위치인지, 아무것도 아닌지 반환
@@ -681,6 +779,26 @@ public class ChessBoard {
 				switch (nextAction(new int[]{x, y}, prevNext)){
 					case ClickAction.Move: {
 						// castling
+						Unit kingUnit = (getIcon(x, y).type == PieceType.king) ? Unit.findUnit(
+								(turn == PlayerColor.white) ? whiteUnit: blackUnit,
+								getIcon(x, y), x, y
+						): Unit.findUnit(
+								(turn == PlayerColor.white) ? whiteUnit: blackUnit,
+								getIcon(x, 4), x, 4
+						);
+						Unit rookUnit = (getIcon(x, y).type == PieceType.king) ? Unit.findUnit(
+								(turn == PlayerColor.white) ? whiteUnit: blackUnit,
+								prevTile, prevX, prevY
+						): Unit.findUnit(
+								(turn == PlayerColor.white) ? whiteUnit: blackUnit,
+								getIcon(x, y), x, y
+						);
+
+						kingUnit.move(x, (rookUnit.ypos == 0) ? 2: 6);
+						rookUnit.move(x, (kingUnit.ypos == 2) ? 3: 5);
+
+						if(prevNext != null)
+							prevNext.clear();
 						changeTurn();
 						break;
 					}
@@ -740,6 +858,8 @@ public class ChessBoard {
 					}
 					case ClickAction.None: {
 						// No action Needed
+						if(prevNext != null)
+							prevNext.clear();
 						break;
 					}
 				}
@@ -781,6 +901,8 @@ public class ChessBoard {
 					}
 					case ClickAction.None: {
 						// no action needed
+						if(prevNext != null)
+							prevNext.clear();
 						break;
 					}
 				}
@@ -823,6 +945,7 @@ public class ChessBoard {
 				}
 			}
 		}
+		// En passant 용 VirtualPawn 초기화
 		Pawn dummy = new Pawn(new Piece(), -1, -1);
 		VirtualPawn.resetVirtualPawn(dummy);
 		//흰색 턴 시작
