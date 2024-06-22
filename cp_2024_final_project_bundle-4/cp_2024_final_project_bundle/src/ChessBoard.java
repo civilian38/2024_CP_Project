@@ -256,6 +256,7 @@ public class ChessBoard {
 
 		String message = STR."\{turn.toString().toUpperCase()}'s turn";
 
+		// 내 킹이 죽었으면 내가 진것
 		Unit king = null;
 		for(Unit unit: (turn == PlayerColor.white) ? whiteUnit: blackUnit){
 			if(unit.piece.type == PieceType.king){
@@ -267,6 +268,7 @@ public class ChessBoard {
 			end = true;
 			message = STR."end | \{enemyColor()} win";
 		} else {
+			// CHECK 상태인지 확인
 			if(isTargeted(king.xpos, king.ypos, turn, chessBoardStatus, (turn == PlayerColor.black) ? whiteUnit: blackUnit)){
 				check = true;
 				message += " | CHECK";
@@ -275,6 +277,7 @@ public class ChessBoard {
 				nextKing.addAll(king.next().get(0));
 				nextKing.addAll(king.next().get(1));
 
+				// 왕만 움직이는 것으로 체크가 풀리는 경우 확인
 				boolean hasSimpleSolution = false;
 				for(int[] nextKingPosition: nextKing){
 					ArrayList<Unit> myUnits = unitBinder(turn, false);
@@ -291,6 +294,7 @@ public class ChessBoard {
 					}
 				}
 
+				// 왕을 움직여도 체크가 풀리지 않는 경우 다른 기물로 막을 수 있는지 확인
 				if(!hasSimpleSolution){
 					boolean hasSolution = false;
 					for(Unit myUnit: (turn == PlayerColor.white) ? whiteUnit: blackUnit){
@@ -317,6 +321,7 @@ public class ChessBoard {
 							break;
 					}
 
+					// 모두 돌려봐도 풀릴 수 없다면 체크메이트
 					if(!hasSolution){
 						message += "MATE";
 						checkmate = true;
