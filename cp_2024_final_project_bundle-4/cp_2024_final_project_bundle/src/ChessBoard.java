@@ -246,6 +246,21 @@ public class ChessBoard {
 		return target;
 	}
 
+	// 체크 상태를 풀 수 있는지 확인
+	boolean canRelieveCheck(int x, int y, PlayerColor pc, Unit selected, Unit king){
+		ArrayList<Unit> myUnits = unitBinder(pc, false);
+		ArrayList<Unit> enemyUnits = unitBinder(pc, true);
+
+		Unit tempMyUnit= Unit.findUnit(myUnits, selected.piece, selected.xpos, selected.ypos);
+		tempMyUnit.xpos = x;
+		tempMyUnit.ypos = y;
+
+		Piece[][] tempMap = mapGenerator(myUnits, enemyUnits);
+		if(tempMyUnit.piece.type == PieceType.king)
+			return !isTargeted(tempMyUnit.xpos, tempMyUnit.ypos, turn, tempMap, enemyUnits);
+		return !isTargeted(king.xpos, king.ypos, turn, tempMap, enemyUnits);
+	}
+
 	// white - black 턴 전환
 	void changeTurn(){
 		switch (turn){
@@ -1005,7 +1020,6 @@ public class ChessBoard {
 			if (enemyUnit.canAttack(x, y, map))
 				return true;
 		}
-		// need to be implemented
 		return false;
 	}
 
@@ -1088,6 +1102,20 @@ public class ChessBoard {
 							Unit selected = (turn == PlayerColor.white) ? Unit.findUnit(whiteUnit, getIcon(x, y), x, y):
 									Unit.findUnit(blackUnit, getIcon(x, y), x, y);
 							prevNext = selected.next();
+
+							// check 상황일시 제약 생김
+							if(check){
+								Unit king = null;
+								for(Unit unit: (turn == PlayerColor.white) ? whiteUnit: blackUnit){
+									if(unit.piece.type == PieceType.king){
+										king = unit;
+									}
+								}
+								for(ArrayList<int[]> nextStep: prevNext){
+									Unit finalKing = king;
+									nextStep.removeIf(position -> !canRelieveCheck(position[0], position[1], turn, selected, finalKing));
+								}
+							}
 
 							// 하이라이트 추가
 							if(prevNext != null && !prevNext.isEmpty()){
