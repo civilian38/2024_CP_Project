@@ -1,3 +1,8 @@
+/*
+2024 봄학기 컴퓨터 프로그래밍 Final Project
+공과대학 컴퓨터공학부 2023-14376 이규원
+*/
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
