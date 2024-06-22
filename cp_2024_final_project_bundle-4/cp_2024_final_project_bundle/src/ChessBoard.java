@@ -211,6 +211,40 @@ public class ChessBoard {
 	private int selX, selY;
 	private boolean check, checkmate, end;
 	private PlayerColor turn = PlayerColor.none;
+	Piece[][] mapGenerator(ArrayList<Unit> myUnits, ArrayList<Unit> enemyUnits){
+		Piece[][] tempMap = new Piece[8][8];
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				tempMap[i][j] = new Piece();
+			}
+		}
+
+		for(Unit enemyUnit: enemyUnits){
+			tempMap[enemyUnit.ypos][enemyUnit.xpos] = new Piece(enemyColor(), enemyUnit.piece.type);
+		}
+		for(Unit myUnit: myUnits){
+			if(tempMap[myUnit.ypos][myUnit.xpos].color != PlayerColor.none)
+				deleteUnit(enemyUnits, tempMap[myUnit.ypos][myUnit.xpos], myUnit.xpos, myUnit.ypos, false);
+			tempMap[myUnit.ypos][myUnit.xpos] = new Piece(turn, myUnit.piece.type);
+		}
+
+		return tempMap;
+	}
+
+	ArrayList<Unit> unitBinder(PlayerColor pc, boolean reverse){
+		ArrayList<Unit> target = new ArrayList<>();
+		for(Unit item: (reverse) ? ((pc == PlayerColor.black) ? whiteUnit: blackUnit): ((pc == PlayerColor.white) ? whiteUnit: blackUnit)){
+			switch (item.piece.type){
+				case PieceType.pawn -> target.add(new Pawn(new Piece(item.piece.color, PieceType.pawn), item.xpos, item.ypos));
+				case PieceType.rook -> target.add(new Rook(new Piece(item.piece.color, PieceType.rook), item.xpos, item.ypos));
+				case PieceType.knight -> target.add(new Knight(new Piece(item.piece.color, PieceType.knight), item.xpos, item.ypos));
+				case PieceType.bishop -> target.add(new Bishop(new Piece(item.piece.color, PieceType.bishop), item.xpos, item.ypos));
+				case PieceType.queen -> target.add(new Queen(new Piece(item.piece.color, PieceType.queen), item.xpos, item.ypos));
+				case PieceType.king -> target.add(new King(new Piece(item.piece.color, PieceType.king), item.xpos, item.ypos));
+			}
+		}
+		return target;
+	}
 
 	// white - black 턴 전환
 	void changeTurn(){
@@ -219,7 +253,81 @@ public class ChessBoard {
 			case PlayerColor.black -> turn = PlayerColor.white;
 			case PlayerColor.white -> turn = PlayerColor.black;
 		}
-		setStatus(STR."\{turn}'s turn");
+
+		String message = STR."\{turn.toString().toUpperCase()}'s turn";
+
+		Unit king = null;
+		for(Unit unit: (turn == PlayerColor.white) ? whiteUnit: blackUnit){
+			if(unit.piece.type == PieceType.king){
+				king = unit;
+			}
+		}
+
+		if(king == null){
+			end = true;
+			message = STR."end | \{enemyColor()} win";
+		} else {
+			if(isTargeted(king.xpos, king.ypos, turn, chessBoardStatus, (turn == PlayerColor.black) ? whiteUnit: blackUnit)){
+				check = true;
+				message += " | CHECK";
+
+				ArrayList<int[]> nextKing = new ArrayList<>();
+				nextKing.addAll(king.next().get(0));
+				nextKing.addAll(king.next().get(1));
+
+				boolean hasSimpleSolution = false;
+				for(int[] nextKingPosition: nextKing){
+					ArrayList<Unit> myUnits = unitBinder(turn, false);
+					ArrayList<Unit> enemyUnits = unitBinder(turn, true);
+
+					Unit tempKing = Unit.findUnit(myUnits, king.piece, king.xpos, king.ypos);
+					tempKing.xpos = nextKingPosition[0];
+					tempKing.ypos = nextKingPosition[1];
+
+					Piece[][] tempMap = mapGenerator(myUnits, enemyUnits);
+					if(!isTargeted(nextKingPosition[0], nextKingPosition[1], turn, tempMap, enemyUnits)){
+						hasSimpleSolution = true;
+						break;
+					}
+				}
+
+				if(!hasSimpleSolution){
+					boolean hasSolution = false;
+					for(Unit myUnit: (turn == PlayerColor.white) ? whiteUnit: blackUnit){
+						ArrayList<int[]> nextUnit = new ArrayList<>();
+						nextUnit.addAll(myUnit.next().get(0));
+						nextUnit.addAll(myUnit.next().get(1));
+						if(myUnit.piece.type != PieceType.king){
+							for(int[] nextUnitPosition: nextUnit){
+								ArrayList<Unit> myUnits = unitBinder(turn, false);
+								ArrayList<Unit> enemyUnits = unitBinder(turn, true);
+
+								Unit tempMyUnit= Unit.findUnit(myUnits, myUnit.piece, myUnit.xpos, myUnit.ypos);
+								tempMyUnit.xpos = nextUnitPosition[0];
+								tempMyUnit.ypos = nextUnitPosition[1];
+
+								Piece[][] tempMap = mapGenerator(myUnits, enemyUnits);
+								if(!isTargeted(king.xpos, king.ypos, turn, tempMap, enemyUnits)){
+									hasSolution = true;
+									break;
+								}
+							}
+						}
+						if(hasSolution)
+							break;
+					}
+
+					if(!hasSolution){
+						message += "MATE";
+						checkmate = true;
+						end = true;
+					}
+				}
+			} else {
+				check = false;
+			}
+		}
+		setStatus(message);
 	}
 
 	// 상대 색 반환
@@ -254,6 +362,11 @@ public class ChessBoard {
 			xpos = x;
 			ypos = y;
 		}
+		Unit(Unit other){
+			this.xpos = other.xpos;
+			this.ypos = other.ypos;
+			this.piece = other.piece;
+		}
 		// 기물의 예상 경로 validation 확인시 bound 설정
 		static boolean isInBound(int x, int y){
 			return ((0 <= x && x < 8) && (0 <= y && y < 8));
@@ -261,7 +374,7 @@ public class ChessBoard {
 		// piece, x좌표, y좌표를 주면 ArrayList 내에서 이에 해당하는 요소 반환
 		static Unit findUnit(ArrayList<Unit> unitlist, Piece piece, int x, int y){
 			for(Unit unit: unitlist){
-				if(unit.piece.equals(piece) && unit.xpos == x && unit.ypos == y){
+				if(unit.piece.type == piece.type && unit.piece.color == piece.color && unit.xpos == x && unit.ypos == y){
 					return unit;
 				}
 			}
@@ -294,6 +407,8 @@ public class ChessBoard {
 
 		@Override
 		public String toString() {
+			if(piece != null && piece.type != null)
+				return STR."Objcet \{piece.type} at (\{xpos}, \{ypos})";
 			return STR."Objcet at (\{xpos}, \{ypos})";
 		}
 	}
@@ -452,7 +567,7 @@ public class ChessBoard {
 				if(
 						getIcon(xpos, 4).type == PieceType.king &&
 						!findUnit((piece.color == PlayerColor.white) ? whiteUnit: blackUnit, getIcon(xpos, 4), xpos, 4).isMoved() &&
-						!isTargeted(xpos, nextKingY, piece.color)
+						!isTargeted(xpos, nextKingY, piece.color, chessBoardStatus, (piece.color == PlayerColor.black) ? whiteUnit: blackUnit)
 				){
 					boolean isInCondition = true;
 					for(int i = ypos; i != 4; i += (4 - ypos)/Math.abs(4 - ypos)){
@@ -718,10 +833,11 @@ public class ChessBoard {
 					{- 1, - 1}
 			};
 
-			for(int i = 0; i < 4; i++){
+			for(int i = 0; i < 8; i++){
 				int[] movement = direction[i];
 				int nextX = xpos;
 				int nextY = ypos;
+
 
 				// 이동 범위 내에 (x,y)가 있으면 true 반환
 				do{
@@ -785,7 +901,7 @@ public class ChessBoard {
 				if(
 						getIcon(xpos, 0).type == PieceType.rook &&
 						!findUnit((piece.color == PlayerColor.white) ? whiteUnit: blackUnit, getIcon(xpos, 0), xpos, 0).isMoved() &&
-						!isTargeted(xpos, 2, piece.color)
+						!isTargeted(xpos, 2, piece.color, chessBoardStatus, (piece.color == PlayerColor.black) ? whiteUnit: blackUnit)
 				){
 					boolean isIncondition = true;
 					for(int i = 1; i < 4; i++){
@@ -804,7 +920,7 @@ public class ChessBoard {
 				if(
 						getIcon(xpos, 7).type == PieceType.rook &&
 						!findUnit((piece.color == PlayerColor.white) ? whiteUnit: blackUnit, getIcon(xpos, 7), xpos, 7).isMoved() &&
-						!isTargeted(xpos, 6, piece.color)
+						!isTargeted(xpos, 6, piece.color,chessBoardStatus, (piece.color == PlayerColor.black) ? whiteUnit: blackUnit)
 				){
 					boolean isIncondition = true;
 					for(int i = 5; i < 7; i++){
@@ -873,15 +989,15 @@ public class ChessBoard {
 	// 검은색 기물들에 대한 정보를 저장
 	private ArrayList<Unit> blackUnit = new ArrayList<>();
 	// piece, x좌표, y좌표를 주면 ArrayList 내에서 이에 해당하는 unit 제거
-	void deleteUnit(ArrayList<Unit> unitlist, Piece piece, int x, int y){
-		unitlist.removeIf(unit -> unit.piece.equals(piece) && unit.xpos == x && unit.ypos == y);
-		setIcon(x, y, new Piece());
+	void deleteUnit(ArrayList<Unit> unitlist, Piece piece, int x, int y, boolean handleIcon){
+		unitlist.removeIf(unit -> unit.piece.type == piece.type && unit.piece.color == piece.color && unit.xpos == x && unit.ypos == y);
+		if(handleIcon)
+			setIcon(x, y, new Piece());
 	}
 	// x 좌표, y 좌표, color를 받았을 때 해당 위치를 적이 공격할 수 있는지 확인
-	boolean isTargeted(int x, int y, PlayerColor p){
-		ArrayList<Unit> enemyUnits = (p == PlayerColor.black) ? whiteUnit: blackUnit;
+	boolean isTargeted(int x, int y, PlayerColor p, Piece[][] map, ArrayList<Unit> enemyUnits){
 		for(Unit enemyUnit: enemyUnits){
-			if (enemyUnit.canAttack(x, y, chessBoardStatus))
+			if (enemyUnit.canAttack(x, y, map))
 				return true;
 		}
 		// need to be implemented
@@ -927,150 +1043,154 @@ public class ChessBoard {
 			}
 			highlighted.clear();
 
-			if(getIcon(x, y).color == turn){ // 내 기물 클릭
-				switch (nextAction(new int[]{x, y}, prevNext)){
-					case ClickAction.Move: {
-						// castling
-						Unit kingUnit = (getIcon(x, y).type == PieceType.king) ? Unit.findUnit(
-								(turn == PlayerColor.white) ? whiteUnit: blackUnit,
-								getIcon(x, y), x, y
-						): Unit.findUnit(
-								(turn == PlayerColor.white) ? whiteUnit: blackUnit,
-								getIcon(x, 4), x, 4
-						);
-						Unit rookUnit = (getIcon(x, y).type == PieceType.king) ? Unit.findUnit(
-								(turn == PlayerColor.white) ? whiteUnit: blackUnit,
-								prevTile, prevX, prevY
-						): Unit.findUnit(
-								(turn == PlayerColor.white) ? whiteUnit: blackUnit,
-								getIcon(x, y), x, y
-						);
+			if(!end){
+				if(getIcon(x, y).color == turn){ // 내 기물 클릭
+					switch (nextAction(new int[]{x, y}, prevNext)){
+						case ClickAction.Move: {
+							// castling
+							Unit kingUnit = (getIcon(x, y).type == PieceType.king) ? Unit.findUnit(
+									(turn == PlayerColor.white) ? whiteUnit: blackUnit,
+									getIcon(x, y), x, y
+							): Unit.findUnit(
+									(turn == PlayerColor.white) ? whiteUnit: blackUnit,
+									getIcon(x, 4), x, 4
+							);
+							Unit rookUnit = (getIcon(x, y).type == PieceType.king) ? Unit.findUnit(
+									(turn == PlayerColor.white) ? whiteUnit: blackUnit,
+									prevTile, prevX, prevY
+							): Unit.findUnit(
+									(turn == PlayerColor.white) ? whiteUnit: blackUnit,
+									getIcon(x, y), x, y
+							);
 
-						kingUnit.move(x, (rookUnit.ypos == 0) ? 2: 6);
-						rookUnit.move(x, (kingUnit.ypos == 2) ? 3: 5);
+							kingUnit.move(x, (rookUnit.ypos == 0) ? 2: 6);
+							rookUnit.move(x, (kingUnit.ypos == 2) ? 3: 5);
 
-						if(prevNext != null)
-							prevNext.clear();
-						changeTurn();
-						break;
-					}
-					case ClickAction.Attack: {
-						// which may not happen
-						System.out.println("Unexpected Operation: my unit attacks my unit");
-						break;
-					}
-					case ClickAction.None: {
-						// prevNext 업데이트
-						if(prevNext != null)
-							prevNext.clear();
-						Unit selected = (turn == PlayerColor.white) ? Unit.findUnit(whiteUnit, getIcon(x, y), x, y):
-								Unit.findUnit(blackUnit, getIcon(x, y), x, y);
-						prevNext = selected.next();
+							if(prevNext != null)
+								prevNext.clear();
+							changeTurn();
+							break;
+						}
+						case ClickAction.Attack: {
+							// which may not happen
+							System.out.println("Unexpected Operation: my unit attacks my unit");
+							break;
+						}
+						case ClickAction.None: {
+							// prevNext 업데이트
+							if(prevNext != null)
+								prevNext.clear();
+							Unit selected = (turn == PlayerColor.white) ? Unit.findUnit(whiteUnit, getIcon(x, y), x, y):
+									Unit.findUnit(blackUnit, getIcon(x, y), x, y);
+							prevNext = selected.next();
 
-						// 하이라이트 추가
-						if(prevNext != null && !prevNext.isEmpty()){
-							for(ArrayList<int[]> candidate: prevNext){
-								highlighted.addAll(candidate);
+							// 하이라이트 추가
+							if(prevNext != null && !prevNext.isEmpty()){
+								for(ArrayList<int[]> candidate: prevNext){
+									highlighted.addAll(candidate);
+								}
+								for(int[] highlightTile: highlighted){
+									markPosition(highlightTile[0], highlightTile[1]);
+								}
 							}
-							for(int[] highlightTile: highlighted){
-								markPosition(highlightTile[0], highlightTile[1]);
+							break;
+						}
+					}
+				} else if (getIcon(x, y).color == enemyColor()){ // 상대 기물 클릭
+					switch (nextAction(new int[]{x, y}, prevNext)){
+						case ClickAction.Move: {
+							// Which may not happen
+							System.out.println("Unexpected Action: Moving enemy's unit");
+							break;
+						}
+						case ClickAction.Attack: {
+							deleteUnit((turn == PlayerColor.white) ? blackUnit: whiteUnit, getIcon(x, y), x, y, true);
+							Unit selected = (turn == PlayerColor.white) ? Unit.findUnit(whiteUnit, prevTile, prevX, prevY):
+									Unit.findUnit(blackUnit, prevTile, prevX, prevY);
+							selected.move(x, y);
+							if(prevNext != null)
+								prevNext.clear();
+
+							// Promotion
+							if (selected.piece.type == PieceType.pawn && selected.xpos == selected.specialValue()){
+								int x = selected.xpos;
+								int y = selected.ypos;
+								Piece p = selected.piece;
+
+								deleteUnit((turn == PlayerColor.white) ? whiteUnit: blackUnit, p, x, y, true);
+								setIcon(x, y, new Piece(turn, PieceType.queen));
+								((turn == PlayerColor.white) ? whiteUnit: blackUnit).add(new Queen(getIcon(x, y), x, y));
 							}
+
+							changeTurn();
+							break;
 						}
-						break;
+						case ClickAction.None: {
+							// No action Needed
+							if(prevNext != null)
+								prevNext.clear();
+							break;
+						}
+					}
+				} else { // 빈 타일 클릭
+					switch (nextAction(new int[]{x, y}, prevNext)){
+						case ClickAction.Move: {
+							Unit selected = (turn == PlayerColor.white) ? Unit.findUnit(whiteUnit, prevTile, prevX, prevY):
+									Unit.findUnit(blackUnit, prevTile, prevX, prevY);
+							selected.move(x, y);
+
+							// Promotion
+							if (selected.piece.type == PieceType.pawn && selected.xpos == selected.specialValue()){
+								int x = selected.xpos;
+								int y = selected.ypos;
+								Piece p = selected.piece;
+
+								deleteUnit((turn == PlayerColor.white) ? whiteUnit: blackUnit, p, x, y, true);
+								setIcon(x, y, new Piece(turn, PieceType.queen));
+								((turn == PlayerColor.white) ? whiteUnit: blackUnit).add(new Queen(getIcon(x, y), x, y));
+							}
+
+							if(prevNext != null)
+								prevNext.clear();
+							changeTurn();
+							break;
+						}
+						case ClickAction.Attack: {
+							// en passant
+							deleteUnit((turn == PlayerColor.white) ? blackUnit: whiteUnit,
+									VirtualPawn.actualPawn.piece, VirtualPawn.actualPawn.xpos, VirtualPawn.actualPawn.ypos, true);
+							Unit selected = (turn == PlayerColor.white) ? Unit.findUnit(whiteUnit, prevTile, prevX, prevY):
+									Unit.findUnit(blackUnit, prevTile, prevX, prevY);
+							selected.move(x, y);
+							if(prevNext != null)
+								prevNext.clear();
+
+							changeTurn();
+							break;
+						}
+						case ClickAction.None: {
+							// no action needed
+							if(prevNext != null)
+								prevNext.clear();
+							break;
+						}
 					}
 				}
-			} else if (getIcon(x, y).color == enemyColor()){ // 상대 기물 클릭
-				switch (nextAction(new int[]{x, y}, prevNext)){
-					case ClickAction.Move: {
-						// Which may not happen
-						System.out.println("Unexpected Action: Moving enemy's unit");
-						break;
-					}
-					case ClickAction.Attack: {
-						deleteUnit((turn == PlayerColor.white) ? blackUnit: whiteUnit, getIcon(x, y), x, y);
-						Unit selected = (turn == PlayerColor.white) ? Unit.findUnit(whiteUnit, prevTile, prevX, prevY):
-								Unit.findUnit(blackUnit, prevTile, prevX, prevY);
-						selected.move(x, y);
-						if(prevNext != null)
-							prevNext.clear();
+				prevTile = getIcon(x, y);
+				prevX = x;
+				prevY = y;
 
-						// Promotion
-						if (selected.piece.type == PieceType.pawn && selected.xpos == selected.specialValue()){
-							int x = selected.xpos;
-							int y = selected.ypos;
-							Piece p = selected.piece;
-
-							deleteUnit((turn == PlayerColor.white) ? whiteUnit: blackUnit, p, x, y);
-							setIcon(x, y, new Piece(turn, PieceType.queen));
-							((turn == PlayerColor.white) ? whiteUnit: blackUnit).add(new Queen(getIcon(x, y), x, y));
-						}
-
-						changeTurn();
-						break;
-					}
-					case ClickAction.None: {
-						// No action Needed
-						if(prevNext != null)
-							prevNext.clear();
-						break;
-					}
+				if(VirtualPawn.color() == turn){
+					Pawn dummy = new Pawn(new Piece(), -1, -1);
+					VirtualPawn.resetVirtualPawn(dummy);
 				}
-			} else { // 빈 타일 클릭
-				switch (nextAction(new int[]{x, y}, prevNext)){
-					case ClickAction.Move: {
-						Unit selected = (turn == PlayerColor.white) ? Unit.findUnit(whiteUnit, prevTile, prevX, prevY):
-								Unit.findUnit(blackUnit, prevTile, prevX, prevY);
-						selected.move(x, y);
-
-						// Promotion
-						if (selected.piece.type == PieceType.pawn && selected.xpos == selected.specialValue()){
-							int x = selected.xpos;
-							int y = selected.ypos;
-							Piece p = selected.piece;
-
-							deleteUnit((turn == PlayerColor.white) ? whiteUnit: blackUnit, p, x, y);
-							setIcon(x, y, new Piece(turn, PieceType.queen));
-							((turn == PlayerColor.white) ? whiteUnit: blackUnit).add(new Queen(getIcon(x, y), x, y));
-						}
-
-						if(prevNext != null)
-							prevNext.clear();
-						changeTurn();
-						break;
-					}
-					case ClickAction.Attack: {
-						// en passant
-						deleteUnit((turn == PlayerColor.white) ? blackUnit: whiteUnit,
-								VirtualPawn.actualPawn.piece, VirtualPawn.actualPawn.xpos, VirtualPawn.actualPawn.ypos);
-						Unit selected = (turn == PlayerColor.white) ? Unit.findUnit(whiteUnit, prevTile, prevX, prevY):
-								Unit.findUnit(blackUnit, prevTile, prevX, prevY);
-						selected.move(x, y);
-						if(prevNext != null)
-							prevNext.clear();
-
-						changeTurn();
-						break;
-					}
-					case ClickAction.None: {
-						// no action needed
-						if(prevNext != null)
-							prevNext.clear();
-						break;
-					}
-				}
-			}
-			prevTile = getIcon(x, y);
-			prevX = x;
-			prevY = y;
-
-			if(VirtualPawn.color() == turn){
-				Pawn dummy = new Pawn(new Piece(), -1, -1);
-				VirtualPawn.resetVirtualPawn(dummy);
 			}
 		}
 	}
 
 	void onInitiateBoard(){
+		blackUnit.clear();
+		whiteUnit.clear();
 		// 검은색 기물들에 대한 정보 저장
 		for(int i = 0; i < 2; i++){
 			for(int j = 0; j < 8; j++){
@@ -1100,7 +1220,11 @@ public class ChessBoard {
 		// En passant 용 VirtualPawn 초기화
 		Pawn dummy = new Pawn(new Piece(), -1, -1);
 		VirtualPawn.resetVirtualPawn(dummy);
-		//흰색 턴 시작
+		// 마커 초기화
+		check = false;
+		checkmate = false;
+		end = false;
+		// 흰색 턴 시작
 		turn = PlayerColor.none;
 		changeTurn();
 	}
