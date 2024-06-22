@@ -287,6 +287,10 @@ public class ChessBoard {
 		boolean isMoved(){
 			return false;
 		}
+		// 특정 위치를 공격할 수 있는지 확인
+		boolean canAttack(int x, int y, Piece[][] board){
+			return false;
+		}
 
 		@Override
 		public String toString() {
@@ -337,6 +341,20 @@ public class ChessBoard {
 			returnArray.add(move);
 			returnArray.add(attack);
 			return returnArray;
+		}
+
+		@Override
+		boolean canAttack(int x, int y, Piece[][] map){
+			// 움직일 수 있는 방향 설정
+			int[] moveDirection = (piece.color == PlayerColor.black) ? new int[]{1, 0} : new int[]{-1, 0};
+			int newX = xpos + moveDirection[0];
+			int newY = ypos + moveDirection[1];
+			if(x == newX && y == newY + 1){
+				return true;
+			} else if(x == newX && y == newY - 1){
+				return true;
+			}
+			return false;
 		}
 
 		@Override
@@ -458,6 +476,31 @@ public class ChessBoard {
 		}
 
 		@Override
+		boolean canAttack(int x, int y, Piece[][] board){
+			int[][] direction = {
+					{1, 0},
+					{0, 1},
+					{-1, 0},
+					{0, -1}
+			};
+			for(int i = 0; i < 4; i++){
+				int[] movement = direction[i];
+				int nextX = xpos;
+				int nextY = ypos;
+
+				// 이동 범위 내에 (x,y)가 있으면 true 반환
+				do{
+					nextX += movement[0];
+					nextY += movement[1];
+					if(x == nextX && y == nextY){
+						return true;
+					}
+				} while(isInBound(nextX, nextY) && board[nextY][nextX].color == PlayerColor.none);
+			}
+			return false;
+		}
+
+		@Override
 		void move(int newX, int newY){
 			super.move(newX, newY);
 			isMoved = true;
@@ -508,6 +551,29 @@ public class ChessBoard {
 			returnArray.add(attack);
 			return returnArray;
 		}
+
+		@Override
+		boolean canAttack(int x, int y, Piece[][] board){
+			int[][] candidates = {
+					{xpos + 1, ypos + 2},
+					{xpos + 1, ypos - 2},
+					{xpos - 1 ,ypos + 2},
+					{xpos - 1 ,ypos - 2},
+					{xpos + 2, ypos + 1},
+					{xpos + 2, ypos - 1},
+					{xpos - 2, ypos + 1},
+					{xpos - 2, ypos - 1},
+			};
+			for(int[] newPosition: candidates){
+				if (isInBound(newPosition[0], newPosition[1])){
+					if(x == newPosition[0] && y == newPosition[1]){
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
 		@Override
 		public String toString() {
 			return STR."\{piece.color} Knight at (\{xpos}, \{ypos})";
@@ -558,6 +624,32 @@ public class ChessBoard {
 			returnArray.add(attack);
 			return returnArray;
 		}
+
+		@Override
+		boolean canAttack(int x, int y, Piece[][] board){
+			int[][] direction = {
+					{1, 1},
+					{-1, 1},
+					{-1, -1},
+					{1, -1}
+			};
+			for(int i = 0; i < 4; i++){
+				int[] movement = direction[i];
+				int nextX = xpos;
+				int nextY = ypos;
+
+				// 이동 범위 내에 (x,y)가 있으면 true 반환
+				do{
+					nextX += movement[0];
+					nextY += movement[1];
+					if(x == nextX && y == nextY){
+						return true;
+					}
+				} while(isInBound(nextX, nextY) && board[nextY][nextX].color == PlayerColor.none);
+			}
+			return false;
+		}
+
 		@Override
 		public String toString() {
 			return STR."\{piece.color} Bishop at (\{xpos}, \{ypos})";
@@ -612,6 +704,37 @@ public class ChessBoard {
 			returnArray.add(attack);
 			return returnArray;
 		}
+
+		@Override
+		boolean canAttack(int x, int y, Piece[][] board){
+			int[][] direction = {
+					{0, 1},
+					{0, - 1},
+					{1, 0},
+					{1, 1},
+					{1, - 1},
+					{- 1, 0},
+					{- 1, 1},
+					{- 1, - 1}
+			};
+
+			for(int i = 0; i < 4; i++){
+				int[] movement = direction[i];
+				int nextX = xpos;
+				int nextY = ypos;
+
+				// 이동 범위 내에 (x,y)가 있으면 true 반환
+				do{
+					nextX += movement[0];
+					nextY += movement[1];
+					if(x == nextX && y == nextY){
+						return true;
+					}
+				} while(isInBound(nextX, nextY) && board[nextY][nextX].color == PlayerColor.none);
+			}
+			return false;
+		}
+
 		@Override
 		public String toString() {
 			return STR."\{piece.color} Queen at (\{xpos}, \{ypos})";
@@ -705,6 +828,30 @@ public class ChessBoard {
 		}
 
 		@Override
+		boolean canAttack(int x, int y, Piece[][] board){
+			int[][] direction = {
+					{0, 1},
+					{0, - 1},
+					{1, 0},
+					{1, 1},
+					{1, - 1},
+					{- 1, 0},
+					{- 1, 1},
+					{- 1, - 1}
+			};
+			for(int i = 0; i < 8; i++) {
+				int[] movement = direction[i];
+				int nextX = xpos + movement[0];
+				int nextY = ypos + movement[1];
+
+				if(x == nextX && y == nextY){
+					return true;
+				}
+			}
+			return false;
+		}
+
+		@Override
 		void move(int newX, int newY){
 			super.move(newX, newY);
 			isMoved = true;
@@ -732,6 +879,11 @@ public class ChessBoard {
 	}
 	// x 좌표, y 좌표, color를 받았을 때 해당 위치를 적이 공격할 수 있는지 확인
 	boolean isTargeted(int x, int y, PlayerColor p){
+		ArrayList<Unit> enemyUnits = (p == PlayerColor.black) ? whiteUnit: blackUnit;
+		for(Unit enemyUnit: enemyUnits){
+			if (enemyUnit.canAttack(x, y, chessBoardStatus))
+				return true;
+		}
 		// need to be implemented
 		return false;
 	}
