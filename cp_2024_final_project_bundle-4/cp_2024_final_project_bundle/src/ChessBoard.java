@@ -31,20 +31,20 @@ public class ChessBoard {
 	}
 
 	public final void initPieceImages(){
-		pieceImage_b[0] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\king_b.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
-		pieceImage_b[1] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\queen_b.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
-		pieceImage_b[2] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\bishop_b.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
-		pieceImage_b[3] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\knight_b.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
-		pieceImage_b[4] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\rook_b.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
-		pieceImage_b[5] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\pawn_b.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
+		pieceImage_b[0] = new ImageIcon(new ImageIcon("./img/king_b.png").getImage().getScaledInstance(64, 64, java.awt.Image.SCALE_SMOOTH));
+		pieceImage_b[1] = new ImageIcon(new ImageIcon("./img/queen_b.png").getImage().getScaledInstance(64, 64, java.awt.Image.SCALE_SMOOTH));
+		pieceImage_b[2] = new ImageIcon(new ImageIcon("./img/bishop_b.png").getImage().getScaledInstance(64, 64, java.awt.Image.SCALE_SMOOTH));
+		pieceImage_b[3] = new ImageIcon(new ImageIcon("./img/knight_b.png").getImage().getScaledInstance(64, 64, java.awt.Image.SCALE_SMOOTH));
+		pieceImage_b[4] = new ImageIcon(new ImageIcon("./img/rook_b.png").getImage().getScaledInstance(64, 64, java.awt.Image.SCALE_SMOOTH));
+		pieceImage_b[5] = new ImageIcon(new ImageIcon("./img/pawn_b.png").getImage().getScaledInstance(64, 64, java.awt.Image.SCALE_SMOOTH));
 		pieceImage_b[6] = new ImageIcon(new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB));
 
-		pieceImage_w[0] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\king_w.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
-		pieceImage_w[1] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\queen_w.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
-		pieceImage_w[2] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\bishop_w.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
-		pieceImage_w[3] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\knight_w.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
-		pieceImage_w[4] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\rook_w.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
-		pieceImage_w[5] = new ImageIcon(new ImageIcon("C:\\Users\\gyk23\\github\\2024_CP_Project\\cp_2024_final_project_bundle-4\\cp_2024_final_project_bundle\\img\\pawn_w.png").getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
+		pieceImage_w[0] = new ImageIcon(new ImageIcon("./img/king_w.png").getImage().getScaledInstance(64, 64, java.awt.Image.SCALE_SMOOTH));
+		pieceImage_w[1] = new ImageIcon(new ImageIcon("./img/queen_w.png").getImage().getScaledInstance(64, 64, java.awt.Image.SCALE_SMOOTH));
+		pieceImage_w[2] = new ImageIcon(new ImageIcon("./img/bishop_w.png").getImage().getScaledInstance(64, 64, java.awt.Image.SCALE_SMOOTH));
+		pieceImage_w[3] = new ImageIcon(new ImageIcon("./img/knight_w.png").getImage().getScaledInstance(64, 64, java.awt.Image.SCALE_SMOOTH));
+		pieceImage_w[4] = new ImageIcon(new ImageIcon("./img/rook_w.png").getImage().getScaledInstance(64, 64, java.awt.Image.SCALE_SMOOTH));
+		pieceImage_w[5] = new ImageIcon(new ImageIcon("./img/pawn_w.png").getImage().getScaledInstance(64, 64, java.awt.Image.SCALE_SMOOTH));
 		pieceImage_w[6] = new ImageIcon(new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB));
 	}
 
