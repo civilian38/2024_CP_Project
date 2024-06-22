@@ -280,6 +280,10 @@ public class ChessBoard {
 			setIcon(xpos, ypos, piece);
 		}
 
+		int specialValue(){
+			return -1;
+		}
+
 		@Override
 		public String toString() {
 			return STR."Objcet at (\{xpos}, \{ypos})";
@@ -289,8 +293,10 @@ public class ChessBoard {
 	// Pawn 클래스
 	class Pawn extends Unit{
 		boolean isMoved = false;
+		int promotionX;
 		Pawn(Piece piece, int x, int y){
 			super(piece, x, y);
+			promotionX = (piece.color == PlayerColor.black) ? 7: 0;
 		}
 
 		@Override
@@ -340,6 +346,11 @@ public class ChessBoard {
 			}
 			super.move(nextX, nextY);
 			isMoved = true;
+		}
+
+		@Override
+		int specialValue(){
+			return promotionX;
 		}
 
 		@Override
@@ -659,10 +670,7 @@ public class ChessBoard {
 			this.y = y;
 		}
 		// (x, y) is where the click event occured
-		int num = 0;
 		public void actionPerformed(ActionEvent e) {
-			System.out.print(num + " : ");
-			num++;
 			// 하이라이트 제거
 			for (int[] highlightedTile : highlighted) {
 				unmarkPosition(highlightedTile[0], highlightedTile[1]);
@@ -716,6 +724,17 @@ public class ChessBoard {
 						if(prevNext != null)
 							prevNext.clear();
 
+						// Promotion
+						if (selected.piece.type == PieceType.pawn && selected.xpos == selected.specialValue()){
+							int x = selected.xpos;
+							int y = selected.ypos;
+							Piece p = selected.piece;
+
+							deleteUnit((turn == PlayerColor.white) ? whiteUnit: blackUnit, p, x, y);
+							setIcon(x, y, new Piece(turn, PieceType.queen));
+							((turn == PlayerColor.white) ? whiteUnit: blackUnit).add(new Queen(getIcon(x, y), x, y));
+						}
+
 						changeTurn();
 						break;
 					}
@@ -730,6 +749,17 @@ public class ChessBoard {
 						Unit selected = (turn == PlayerColor.white) ? Unit.findUnit(whiteUnit, prevTile, prevX, prevY):
 								Unit.findUnit(blackUnit, prevTile, prevX, prevY);
 						selected.move(x, y);
+
+						// Promotion
+						if (selected.piece.type == PieceType.pawn && selected.xpos == selected.specialValue()){
+							int x = selected.xpos;
+							int y = selected.ypos;
+							Piece p = selected.piece;
+
+							deleteUnit((turn == PlayerColor.white) ? whiteUnit: blackUnit, p, x, y);
+							setIcon(x, y, new Piece(turn, PieceType.queen));
+							((turn == PlayerColor.white) ? whiteUnit: blackUnit).add(new Queen(getIcon(x, y), x, y));
+						}
 
 						if(prevNext != null)
 							prevNext.clear();
